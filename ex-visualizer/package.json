@@ -1,0 +1,43 @@
+{
+  "name": "ex-visualizer",
+  "version": "1.3.2",
+  "description": "EX Visualizer — a truly free timeline video editor. No watermark, no paywall, no uploads.",
+  "main": "main.js",
+  "author": "EX Visualizer",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "serve": "python3 -m http.server 5173 --bind 0.0.0.0",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win portable nsis",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist:linux": "electron-builder --linux AppImage"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "app.exvisualizer.editor",
+    "productName": "EX Visualizer",
+    "artifactName": "EXVisualizer-${version}-${os}-${arch}.${ext}",
+    "files": [
+      "index.html",
+      "style.css",
+      "app.js",
+      "main.js",
+      "preload.js",
+      "package.json"
+    ],
+    "extraResources": [
+      { "from": "resources/ffmpeg.exe", "to": "ffmpeg.exe" }
+    ],
+    "win": {
+      "target": ["portable", "nsis"],
+      "signAndEditExecutable": false
+    },
+    "mac": { "target": ["dmg"], "category": "public.app-category.video" },
+    "linux": { "target": ["AppImage"], "category": "Video" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+  }
+}

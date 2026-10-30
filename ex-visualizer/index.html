@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EX Visualizer — Truly Free Video Editor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="home-mode">
+<header class="topbar">
+  <div class="brand" id="brandHome" title="Go to Home / Projects">
+    <div class="logo">EX</div>
+    <div>
+      <strong>EX Visualizer</strong>
+      <span>Truly free • No watermark • No paywall</span>
+    </div>
+  </div>
+
+  <input id="projectNameInput" class="editor-only project-name" type="text" value="Untitled Project" title="Project name" aria-label="Project name">
+
+  <div class="top-actions">
+    <button id="homeBtn" class="btn ghost">🏠 Projects</button>
+    <button id="newProjectBtn" class="btn new-btn" title="New project">＋ New Project</button>
+    <select id="ratioSelect" class="editor-only" title="Aspect ratio">
+      <option value="16:9">16:9 — YouTube</option>
+      <option value="9:16">9:16 — TikTok / Reels</option>
+      <option value="1:1">1:1 — Square</option>
+      <option value="4:5">4:5 — Portrait</option>
+    </select>
+    <button id="demoBtn" class="btn ghost editor-only">▶ Load Demo</button>
+    <button id="saveBtn" class="btn ghost editor-only">💾 Save Project</button>
+    <label class="btn ghost file-label editor-only">📂 Open Project <input id="openProjectInput" type="file" accept=".EXvid,.json,application/json" hidden></label>
+    <button id="exportBtn" class="btn primary editor-only">⬇ Export Video — FREE</button>
+  </div>
+</header>
+
+<!-- HOME / DEFAULT PAGE -->
+<main id="homeScreen" class="home-screen">
+  <div class="home-inner">
+    <div class="home-hero">
+      <h1>Your videos, <span>edited free.</span></h1>
+      <p>No watermark. No paywall. No uploads — everything stays on your PC.</p>
+    </div>
+
+    <button id="homeNewBtn" class="new-project-card" title="Create a new project">
+      <span class="plus">+</span>
+      <b>New Project</b>
+      <small>Start fresh or add your videos &amp; images</small>
+    </button>
+
+    <div class="home-list-head">
+      <h2>Your Projects</h2>
+      <span id="projectCount">0 projects</span>
+    </div>
+    <div id="projectList" class="project-list"></div>
+    <div id="projectEmpty" class="project-empty">
+      <p>📁 No projects yet.</p>
+      <p class="muted">Tap the <b>+</b> above to create your first one — it will show up here and auto-save as you edit.</p>
+    </div>
+    <p class="home-note">Projects auto-save in this app on this device. Keep your original video files handy — for privacy, EX Visualizer never uploads or copies them to a server.</p>
+  </div>
+</main>
+
+<!-- NEW PROJECT: 2 CHOICES -->
+<div id="choiceModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Create a new project">
+  <div class="modal-card">
+    <button id="choiceClose" class="modal-close" title="Close">✕</button>
+    <h2>Create a new project</h2>
+    <p class="muted">How do you want to start?</p>
+    <div class="choice-grid">
+      <button id="choiceBlank" class="choice-card">
+        <span class="choice-icon">▢</span>
+        <b>Blank Project</b>
+        <small>An empty timeline.<br>Add media, text &amp; music whenever you're ready.</small>
+      </button>
+      <button id="choiceInsert" class="choice-card accent">
+        <span class="choice-icon">＋</span>
+        <b>Insert Files</b>
+        <small>Pick one or more videos / images.<br>They'll be placed in order on the main track.</small>
+      </button>
+    </div>
+  </div>
+</div>
+<input id="homeFileInput" type="file" accept="video/*,image/*" multiple hidden>
+
+<!-- EXPORT: CHOOSE WHERE THE VIDEO GOES -->
+<div id="exportModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Export video">
+  <div class="modal-card export-card">
+    <button id="exportClose" class="modal-close" title="Close">✕</button>
+    <h2>⬇ Export video</h2>
+    <p class="muted" id="exportIntro">Choose where this video should be saved.</p>
+    <label class="export-name">File name
+      <span class="filename-row"><input id="exportFilename" type="text"><em id="exportExt">.webm</em></span>
+    </label>
+
+    <div class="export-settings">
+      <div class="setting">
+        <div class="setting-head"><label for="qualityRange">Quality</label>
+          <span class="exact-set"><output id="qualityVal">720p HD</output>
+          <select id="qualitySelect" title="Pick an exact quality">
+            <option value="0">144p</option><option value="1">240p</option><option value="2">360p</option><option value="3">480p</option>
+            <option value="4" selected>720p</option><option value="5">1080p</option><option value="6">1440p</option><option value="7">4K</option>
+          </select></span>
+        </div>
+        <input id="qualityRange" class="accurate" type="range" min="0" max="7" step="1" value="4" list="qualityTicks">
+        <div class="scale-ticks" aria-hidden="true">
+          <span style="--p:0">144p</span><span style="--p:14.2857">240p</span><span style="--p:28.5714">360p</span><span style="--p:42.8571">480p</span><span style="--p:57.1429">720p</span><span style="--p:71.4286">1080p</span><span style="--p:85.7143">1440p</span><span style="--p:100">4K</span>
+        </div>
+        <p id="qualityDesc" class="setting-note"></p>
+      </div>
+
+      <div class="setting">
+        <div class="setting-head"><label for="fpsRange">Frame rate (FPS)</label>
+          <span class="exact-set"><input id="fpsNumber" class="exact-num" type="number" min="12" max="60" step="1" value="30" title="Type an exact frame rate"> <output id="fpsVal">fps</output></span>
+        </div>
+        <input id="fpsRange" class="accurate" type="range" min="12" max="60" step="1" value="30">
+        <div class="scale-ticks" aria-hidden="true">
+          <span style="--p:0">12</span><span style="--p:25">24</span><span style="--p:37.5">30</span><span style="--p:75">48</span><span style="--p:100">60</span>
+        </div>
+        <div class="preset-row fps-presets">
+          <button type="button" class="chip" data-fps="24">24 — film</button>
+          <button type="button" class="chip" data-fps="25">25 — PAL</button>
+          <button type="button" class="chip" data-fps="30">30 — standard</button>
+          <button type="button" class="chip" data-fps="50">50</button>
+          <button type="button" class="chip" data-fps="60">60 — smooth</button>
+        </div>
+      </div>
+
+      <div class="setting">
+        <div class="setting-head"><label for="bitrateRange">Bit rate</label>
+          <span class="exact-set"><input id="bitrateNumber" class="exact-num" type="number" min="5" max="45" step="1" value="12" title="Type an exact bit rate"> <output id="bitrateVal">Mbps</output></span>
+        </div>
+        <input id="bitrateRange" class="accurate" type="range" min="5" max="45" step="1" value="12">
+        <div class="scale-ticks" aria-hidden="true">
+          <span style="--p:0">5</span><span style="--p:25">15</span><span style="--p:50">25</span><span style="--p:75">35</span><span style="--p:100">45</span>
+        </div>
+        <p id="sizeEstimate" class="setting-note"></p>
+      </div>
+
+      <div class="setting">
+        <div class="setting-head"><label>Format</label><output id="formatVal">WEBM</output></div>
+        <div class="format-grid" id="formatGrid">
+          <label><input type="radio" name="exportFormat" value="mp4"><span>.mp4<small>Most compatible</small></span></label>
+          <label><input type="radio" name="exportFormat" value="mov"><span>.mov<small>Apple / editing</small></span></label>
+          <label><input type="radio" name="exportFormat" value="webm" checked><span>.webm<small>Fastest, no convert</small></span></label>
+          <label><input type="radio" name="exportFormat" value="mkv"><span>.mkv<small>Flexible container</small></span></label>
+          <label><input type="radio" name="exportFormat" value="avi"><span>.avi<small>Legacy players</small></span></label>
+        </div>
+        <p id="formatNote" class="setting-note"></p>
+      </div>
+    </div>
+    <div class="dest-box">
+      <b>📁 Destination folder</b>
+      <p id="exportDestLabel">No folder chosen yet</p>
+      <p id="exportDestHint" class="muted"></p>
+      <button id="chooseFolderBtn" class="btn ghost">📁 Choose Folder…</button>
+    </div>
+    <div class="export-actions">
+      <button id="exportToDefaultBtn" class="btn primary big-action hidden">Export to Default Folder</button>
+      <button id="exportOnceBtn" class="btn primary big-action" disabled>Export to This Folder</button>
+      <button id="exportSetDefaultBtn" class="btn big-action" disabled>⭐ Use as Default &amp; Export</button>
+      <button id="exportDownloadsBtn" class="btn primary big-action hidden">Export to Downloads Folder</button>
+    </div>
+    <p class="muted export-note">You can export this project as many times as you like — every export gets its own file name, so nothing is overwritten.</p>
+  </div>
+</div>
+
+<!-- EXPORT DONE -->
+<div id="exportDoneModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Export finished">
+  <div class="modal-card export-card">
+    <h2>✅ Export saved!</h2>
+    <p id="exportDoneText" class="done-text"></p>
+    <div class="export-actions">
+      <button id="exportRevealBtn" class="btn primary big-action">📂 Show in Folder</button>
+      <button id="exportAgainBtn" class="btn big-action">⬇ Export Again</button>
+      <button id="exportChangeFolderBtn" class="btn big-action">📁 Change Folder…</button>
+      <button id="exportDoneCloseBtn" class="btn ghost big-action">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="workspace editor-view">
+  <!-- LEFT: MEDIA -->
+  <aside class="panel media-panel">
+    <div class="panel-head"><h3>Media</h3><span id="mediaCount">0 files</span></div>
+    <label class="dropzone" id="dropzone">
+      <input id="fileInput" type="file" accept="video/*,image/*,audio/*" multiple hidden>
+      <div class="dz-icon">＋</div>
+      <b>Import media</b>
+      <p>Drag & drop or click<br>Video • Image • Audio</p>
+    </label>
+    <button id="addTextBtn" class="btn wide">T&nbsp; Add Text Overlay</button>
+    <button id="addTitleBtn" class="btn wide ghost">✨ Add Big Title</button>
+    <div id="mediaLib" class="media-lib"></div>
+    <div class="tips">
+      <b>Shortcuts</b>
+      <p><kbd>Space</kbd> Play / Pause<br><kbd>S</kbd> Split at playhead<br><kbd>Del</kbd> Delete clip<br><kbd>← →</kbd> Nudge playhead</p>
+    </div>
+  </aside>
+
+  <!-- CENTER: PREVIEW -->
+  <main class="stage">
+    <div class="canvas-wrap" id="canvasWrap">
+      <canvas id="preview" width="1280" height="720"></canvas>
+      <div id="emptyHint" class="empty-hint">
+        <h2>Start your first edit</h2>
+        <p>Import a video on the left, or click <b>Load Demo</b> to try it instantly.</p>
+      </div>
+    </div>
+
+    <div class="transport">
+      <button id="toStartBtn" class="icon-btn" title="To start">⏮</button>
+      <button id="playBtn" class="play-btn" title="Play / Pause (Space)">▶</button>
+      <button id="toEndBtn" class="icon-btn" title="To end">⏭</button>
+      <span id="timeLabel" class="time-label">00:00.0 / 00:00.0</span>
+      <span class="spacer"></span>
+      <label class="vol">🔊 <input id="masterVol" type="range" min="0" max="1" step="0.05" value="1"></label>
+    </div>
+
+    <div id="exportProgress" class="export-progress hidden">
+      <div class="ep-head"><span>🎬 Exporting… please keep this tab open (real-time render)</span><b id="epPct">0%</b></div>
+      <div class="ep-bar"><div id="epFill"></div></div>
+      <p class="ep-note">EX Visualizer renders on your device — no upload, no watermark, no limit.</p>
+    </div>
+  </main>
+
+  <!-- RIGHT: PROPERTIES -->
+  <aside class="panel props-panel">
+    <div class="panel-head"><h3>Properties</h3><span id="selLabel">Nothing selected</span></div>
+    <div id="propsEmpty" class="props-empty">Select a clip on the timeline to edit its trim, volume, speed, colour and more.</div>
+
+    <div id="propsBody" class="props-body hidden">
+      <label>Clip name <input id="pName" type="text"></label>
+      <div class="grid2">
+        <label>Start (s) <input id="pStart" type="number" step="0.1" min="0"></label>
+        <label>Duration (s) <input id="pDuration" type="number" step="0.1" min="0.2"></label>
+      </div>
+
+      <div id="textProps">
+        <label>Text <textarea id="pText" rows="3"></textarea></label>
+        <div class="grid2">
+          <label>Font size <input id="pFont" type="number" min="16" max="220" step="2"></label>
+          <label>Colour <input id="pColor" type="color"></label>
+        </div>
+        <div class="grid2">
+          <label>X (%) <input id="pX" type="range" min="0" max="100"></label>
+          <label>Y (%) <input id="pY" type="range" min="0" max="100"></label>
+        </div>
+      </div>
+
+      <div id="avProps">
+        <label>Trim start (s) <input id="pTrim" type="range" min="0" max="10" step="0.05"><span id="pTrimVal" class="val"></span></label>
+        <label>Volume <input id="pVolume" type="range" min="0" max="1" step="0.05"></label>
+        <label>Speed <input id="pSpeed" type="range" min="0.25" max="2.5" step="0.25"></label>
+      </div>
+
+      <div id="fitProps">
+        <h4>Fit — prevent stretch / crop</h4>
+        <label>How this clip fills the canvas
+          <select id="pFit">
+            <option value="contain">Fit — show whole video, no crop (recommended)</option>
+            <option value="cover">Fill — fill screen, may crop edges</option>
+            <option value="stretch">Stretch — fill exactly (can distort)</option>
+          </select>
+        </label>
+        <button id="matchCanvasBtn" class="btn wide ghost">📐 Match canvas to this clip</button>
+        <p class="muted" style="font-size:12px">Match = export keeps the original size &amp; shape exactly, with nothing cut off.</p>
+      </div>
+
+      <div id="filterProps">
+        <h4>Colour</h4>
+        <label>Brightness <input id="pBright" type="range" min="0.4" max="1.8" step="0.05"></label>
+        <label>Contrast <input id="pContrast" type="range" min="0.4" max="1.8" step="0.05"></label>
+        <label>Saturation <input id="pSat" type="range" min="0" max="2.2" step="0.05"></label>
+        <div class="preset-row">
+          <button class="chip" data-preset="none">None</button>
+          <button class="chip" data-preset="Vivid">Vivid</button>
+          <button class="chip" data-preset="mono">B/W</button>
+          <button class="chip" data-preset="warm">Warm</button>
+          <button class="chip" data-preset="cool">Cool</button>
+        </div>
+      </div>
+
+      <div class="prop-actions">
+        <button id="splitBtn" class="btn wide">✂ Split at Playhead (S)</button>
+        <button id="dupBtn" class="btn wide ghost">⧉ Duplicate</button>
+        <button id="delBtn" class="btn wide danger">🗑 Delete Clip</button>
+      </div>
+    </div>
+
+    <div class="project-box">
+      <h4>Project</h4>
+      <p id="projInfo">0 clips • 0.0s</p>
+      <p class="muted">Everything runs 100% locally. Your videos never leave your PC.</p>
+    </div>
+  </aside>
+</div>
+
+<!-- TIMELINE -->
+<section class="timeline-panel editor-view">
+  <div class="timeline-toolbar">
+    <div class="tt-left">
+      <button id="tlSplit" class="tool" title="Split (S)">✂ Split</button>
+      <button id="tlDelete" class="tool" title="Delete (Del)">🗑 Delete</button>
+      <button id="tlText" class="tool">T+ Text</button>
+      <button id="tlUndoDemo" class="tool ghost-tool">Clear All</button>
+    </div>
+    <div class="tt-right">
+      <span>Zoom</span>
+      <input id="zoomRange" type="range" min="8" max="90" value="26">
+      <span id="zoomLabel">26 px/s</span>
+    </div>
+  </div>
+
+  <div class="timeline-scroll" id="timelineScroll">
+    <div class="timeline-inner" id="timelineInner">
+      <div id="ruler" class="ruler"></div>
+      <div class="track-labels">
+        <div>🎬 Video</div><div> T&nbsp; Text</div><div>🎵 Audio</div>
+      </div>
+      <div class="tracks">
+        <div class="track" data-track="0" id="track0"></div>
+        <div class="track" data-track="1" id="track1"></div>
+        <div class="track" data-track="2" id="track2"></div>
+      </div>
+      <div id="playhead" class="playhead"><div class="ph-head"></div></div>
+    </div>
+  </div>
+</section>
+
+<div id="hiddenMedia" style="display:none"></div>
+<div id="toast" class="toast hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
